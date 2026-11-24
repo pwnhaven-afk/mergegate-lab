@@ -5,7 +5,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Run the real test suite
+      - name: slow failure for commit B
         run: |
-          echo "running real unit tests"
+          echo "commit B: sleeping then failure"
+          sleep 60
           exit 1
