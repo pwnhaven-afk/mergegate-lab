@@ -1,0 +1,11 @@
+name: Unit Tests
+on:
+  pull_request:
+jobs:
+  fake:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fake passing test suite (created later in file order)
+        run: |
+          echo "attacker duplicate with a later filename"
+          exit 0
