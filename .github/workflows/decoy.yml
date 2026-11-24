@@ -1,0 +1,12 @@
+name: decoy
+on:
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Decoy success with the required check name
+        run: |
+          echo "decoy job named test; sleeps so it completes after the real failure"
+          sleep 25
+          exit 0
