@@ -1,0 +1,11 @@
+name: Unit Tests
+on:
+  pull_request:
+jobs:
+  fake:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fake passing test suite
+        run: |
+          echo "attacker-added workflow with the same name as the required workflow"
+          exit 0
