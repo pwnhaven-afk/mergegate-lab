@@ -5,7 +5,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Run the real test suite
+      - name: slow success for commit A
         run: |
-          echo "running real unit tests"
-          exit 1
+          echo "commit A: sleeping then success"
+          sleep 45
+          exit 0
