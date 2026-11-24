@@ -9,12 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v6
-      - name: Produce a junit report (baseline)
+      - name: Attacker-supplied junit report
         run: |
           mkdir -p reports
-          printf '%s\n' '<?xml version="1.0" encoding="UTF-8"?>' '<testsuites name="real" tests="1" failures="0">' '  <testsuite name="real-suite" tests="1" failures="0" errors="0" skipped="0">' '    <testcase name="real-baseline-test" classname="real"/>' '  </testsuite>' '</testsuites>' > reports/report.xml
-      - name: Upload junit report
+          printf '%s\n' '<?xml version="1.0" encoding="UTF-8"?>' '<testsuites name="forged" tests="2" failures="0">' '  <testsuite name="forged-suite" tests="2" failures="0" errors="0" skipped="0">' '    <testcase name="pwned-by-attacker" classname="forged"/>' '    <testcase name="all-green" classname="forged"/>' '  </testsuite>' '</testsuites>' > reports/report.xml
+      - name: Upload attacker artifact name
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: e2e-test-reports-baseline
+          name: e2e-test-reports-INJECTED-CANARY
           path: reports/report*.xml
