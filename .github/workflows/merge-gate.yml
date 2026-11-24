@@ -1,0 +1,57 @@
+name: Merge Gate
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+  workflow_run:
+    workflows:
+      - Unit Tests
+    types: [completed]
+permissions:
+  pull-requests: write
+  actions: read
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply or clear merge-gate label
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const GATE_LABEL = 'do-not-merge';
+            if (context.eventName === 'pull_request_target') {
+              await github.rest.issues.addLabels({
+                ...context.repo,
+                issue_number: context.payload.pull_request.number,
+                labels: [GATE_LABEL],
+              });
+              core.info(`Added ${GATE_LABEL} to #${context.payload.pull_request.number}`);
+              return;
+            }
+            const headSha = context.payload.workflow_run.head_sha;
+            const runs = await github.paginate(github.rest.actions.listWorkflowRunsForRepo, {
+              ...context.repo,
+              head_sha: headSha,
+              per_page: 100,
+            });
+            const wfRuns = runs
+              .filter(r => r.name === 'Unit Tests' && r.event === 'pull_request')
+              .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            core.info(`runs for ${headSha}: ${wfRuns.map(r => r.event + '/' + r.conclusion).join(',')}`);
+            if (wfRuns.length === 0) { core.info('no pull_request run; keeping label'); return; }
+            const latest = wfRuns[0];
+            if (latest.status !== 'completed' || latest.conclusion !== 'success') {
+              core.info(`${latest.status}/${latest.conclusion}; keeping label`); return;
+            }
+            const prs = await github.paginate(github.rest.pulls.list, {
+              ...context.repo, state: 'open', per_page: 100,
+            });
+            for (const pr of prs) {
+              if (pr.head.sha !== headSha) continue;
+              if (!pr.labels.some(l => l.name === GATE_LABEL)) continue;
+              try {
+                await github.rest.issues.removeLabel({
+                  ...context.repo, issue_number: pr.number, name: GATE_LABEL,
+                });
+                core.info(`Removed ${GATE_LABEL} from #${pr.number}`);
+              } catch (e) { if (e.status !== 404) throw e; }
+            }
