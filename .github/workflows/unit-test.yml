@@ -5,8 +5,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: slow success for commit A
+      - name: slow failure for commit B
         run: |
-          echo "commit A: sleeping then success"
-          sleep 45
-          exit 0
+          echo "commit B: sleeping then failure"
+          sleep 60
+          exit 1
